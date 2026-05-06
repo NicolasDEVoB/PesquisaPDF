@@ -1,5 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import shutil
 import os
 from pathlib import Path
@@ -30,9 +32,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Configuração de arquivos estáticos (Frontend)
+# Vamos criar a pasta 'static' dentro de 'docintel/app'
+STATIC_DIR = Path(__file__).parent / "static"
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
 @app.get("/")
 def read_root():
-    return {"message": "DocIntel está online! Pronto para processar documentos."}
+    return {"message": "DocIntel está online! Acesse /pesquisa para o chat."}
+
+@app.get("/pesquisa")
+async def interface_pesquisa():
+    # Retorna o arquivo HTML principal do nosso chat
+    caminho_index = STATIC_DIR / "index.html"
+    if not caminho_index.exists():
+        return {"erro": "Arquivo index.html não encontrado na pasta static."}
+    return FileResponse(str(caminho_index))
 
 @app.post("/upload")
 async def upload_document(

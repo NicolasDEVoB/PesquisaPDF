@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocIntel - Pesquisa Inteligente</title>
+    <!-- Google Fonts: Inter para um visual moderno e limpo -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Biblioteca Marked para converter Markdown em HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Barra Lateral para Uploads e Informações -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>DocIntel</h1>
+                <p>IA para seus documentos</p>
+            </div>
+            
+            <div class="upload-section">
+                <h3>Carregar Documento</h3>
+                <label for="arquivo-pdf" class="botao-upload">
+                    <span>Selecionar PDF</span>
+                    <input type="file" id="arquivo-pdf" accept=".pdf" hidden>
+                </label>
+                <div id="status-upload" class="status-texto"></div>
+            </div>
+
+            <div class="info-section">
+                <p>Arraste e solte seus PDFs ou clique acima para começar a conversar com seus documentos.</p>
+            </div>
+        </aside>
+
+        <!-- Área Principal do Chat -->
+        <main class="chat-area">
+            <div id="historico-chat" class="historico-chat">
+                <!-- Mensagem de Boas-vindas -->
+                <div class="mensagem bot">
+                    <div class="avatar">🤖</div>
+                    <div class="conteudo">
+                        <p>Olá! Eu sou o assistente do DocIntel. Faça o upload de um PDF e pergunte qualquer coisa sobre ele.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Área de Entrada de Mensagem -->
+            <div class="input-container">
+                <form id="formulario-pergunta" class="pergunta-form">
+                    <input type="text" id="campo-pergunta" placeholder="Digite sua pergunta aqui..." autocomplete="off">
+                    <button type="submit" id="botao-enviar">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Script principal (JS compilado do TS) -->
+    <script src="/static/script.js"></script>
+</body>
+</html>

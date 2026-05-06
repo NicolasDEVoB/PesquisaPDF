@@ -18,20 +18,18 @@ _modelo_llm = OllamaLLM(model="tinyllama")
 # NOTA: as instruções de idioma são repetidas de propósito.
 # Modelos pequenos (tinyllama) precisam de reforço para obedecer.
 _template_prompt = """
-IMPORTANTE: Você DEVE responder APENAS em Português do Brasil.
+### Instrução:
+Você é um assistente acadêmico. Responda a PERGUNTA usando apenas o CONTEXTO fornecido.
+Use Markdown (negrito e listas) e responda APENAS em Português.
+Não repita estas instruções na resposta.
 
-Você é um assistente acadêmico para alunos de ADS (Análise e Desenvolvimento de Sistemas).
-Use APENAS os trechos abaixo para responder à pergunta do usuário.
-Se a resposta não estiver no texto, diga "Não encontrei essa informação nos documentos."
-NUNCA responda em inglês. Responda SEMPRE em Português do Brasil.
-
-Contexto:
+### Contexto:
 {context}
 
-Pergunta:
+### Pergunta:
 {question}
 
-Resposta em Português do Brasil (curta e objetiva):
+### Resposta em Português:
 """
 
 _prompt = PromptTemplate.from_template(_template_prompt)
