@@ -1,11 +1,9 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
 from pathlib import Path
 import aiofiles
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from .services.pdf_processor import PDFProcessor
 from .services.vector_store import VectorStoreManager
 from .services.ai_engine import AIEngine
@@ -19,6 +17,9 @@ app = FastAPI(
 # Caminho para salvar os uploads (usando a pasta que criamos na estrutura)
 UPLOAD_DIR = Path("data/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+# Tamanho máximo de upload: 30 MB (protege contra arquivos enormes)
+TAMANHO_MAXIMO_UPLOAD = 30 * 1024 * 1024  # 30 MB em bytes
 
 
 # Configuração de CORS (Essencial para seu futuro Frontend em React/JS)
@@ -35,20 +36,40 @@ def read_root():
 
 @app.post("/upload")
 async def upload_document(
+    request: Request,
     file: UploadFile = File(...),
     background_tasks: BackgroundTasks = None,
 ):
+    # Verifica se o arquivo é válido
     if not file.filename:
         raise HTTPException(status_code=400, detail="Nome de arquivo inválido.")
     
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Apenas arquivos PDF são aceitos.")
 
+    # Verifica o tamanho do arquivo antes de processar
+    tamanho_informado = request.headers.get("content-length")
+    if tamanho_informado and int(tamanho_informado) > TAMANHO_MAXIMO_UPLOAD:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Arquivo muito grande. Máximo permitido: {TAMANHO_MAXIMO_UPLOAD // (1024*1024)}MB."
+        )
+
     file_path = UPLOAD_DIR / file.filename
     
-    # Salva o upload de forma assíncrona
+    # Salva o upload de forma assíncrona, controlando tamanho real
+    tamanho_total = 0
     async with aiofiles.open(file_path, "wb") as out:
         while chunk := await file.read(1024 * 1024):  # 1MiB chunks
+            tamanho_total += len(chunk)
+            # Proteção extra: para se o arquivo real exceder o limite
+            if tamanho_total > TAMANHO_MAXIMO_UPLOAD:
+                await out.close()
+                os.remove(file_path)
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"Arquivo muito grande. Máximo permitido: {TAMANHO_MAXIMO_UPLOAD // (1024*1024)}MB."
+                )
             await out.write(chunk)
 
     # Envia o processamento pesado para o background
@@ -82,24 +103,23 @@ async def ask_question(question: str):
     }
 
 # Função de processamento em segundo plano
-_executor = ThreadPoolExecutor(max_workers=4)
+# (BackgroundTasks já roda isto numa thread separada, então é síncrono mesmo)
+def process_and_index(caminho_pdf: str):
+    """Processa o PDF e salva os embeddings no banco vetorial.
+    
+    Roda em background — não bloqueia a resposta HTTP.
+    """
+    # 1. Quebra o PDF em pedaços de texto
+    processador = PDFProcessor()
+    pedacos = processador.process_pdf(caminho_pdf)
 
-def process_and_index(path: str):
-    """Processa PDF e salva embeddings usando thread pool para tarefas CPU‑bound."""
-    loop = asyncio.get_event_loop()
-    # Processamento do PDF (CPU‑bound)
-    processor = PDFProcessor()
-    chunks = loop.run_in_executor(_executor, processor.process_pdf, path)
-    # Salvar vetores (CPU‑bound)
-    v_manager = VectorStoreManager()
-    # aguarda o resultado de chunks antes de salvar
-    async def _save():
-        resolved_chunks = await chunks
-        await loop.run_in_executor(_executor, v_manager.save_chunks, resolved_chunks)
-    asyncio.run(_save())
-    # Opcional: remover o PDF temporário
+    # 2. Transforma em vetores e salva no ChromaDB
+    gerenciador_vetores = VectorStoreManager()
+    gerenciador_vetores.save_chunks(pedacos)
+
+    # 3. (Opcional) Remove o PDF temporário após indexar
     try:
-        os.remove(path)
+        os.remove(caminho_pdf)
     except OSError:
         pass
 

@@ -1,29 +1,59 @@
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 
+# ============================================================
+# SINGLETON: a conexão com o Ollama é criada UMA ÚNICA VEZ.
+# Evita reconectar ao modelo LLM a cada pergunta do usuário.
+#
+# ATENÇÃO sobre memória RAM:
+#   - llama3     → precisa de ~4.6 GB (NÃO cabe em PCs com pouca RAM)
+#   - tinyllama  → precisa de ~637 MB (leve, ideal para PCs modestos)
+#   - llama3.2:1b → precisa de ~1.3 GB (boa qualidade, ainda leve)
+#
+# Troque o modelo abaixo conforme a RAM disponível no seu PC.
+# ============================================================
+_modelo_llm = OllamaLLM(model="tinyllama")
+
+# Template do prompt — também criado uma vez só
+# NOTA: as instruções de idioma são repetidas de propósito.
+# Modelos pequenos (tinyllama) precisam de reforço para obedecer.
+_template_prompt = """
+IMPORTANTE: Você DEVE responder APENAS em Português do Brasil.
+
+Você é um assistente acadêmico para alunos de ADS (Análise e Desenvolvimento de Sistemas).
+Use APENAS os trechos abaixo para responder à pergunta do usuário.
+Se a resposta não estiver no texto, diga "Não encontrei essa informação nos documentos."
+NUNCA responda em inglês. Responda SEMPRE em Português do Brasil.
+
+Contexto:
+{context}
+
+Pergunta:
+{question}
+
+Resposta em Português do Brasil (curta e objetiva):
+"""
+
+_prompt = PromptTemplate.from_template(_template_prompt)
+
+
 class AIEngine:
-    def __init__(self, model_name: str = "llama3"):
-        self.model = OllamaLLM(model=model_name)
-        self.template = """
-        Você é um assistente acadêmico para alunos de ADS. 
-        Use APENAS os trechos abaixo para responder à pergunta do usuário.
-        Se a resposta não estiver no texto, diga que não sabe.
-        
-        Contexto:
-        {context}
-        
-        Pergunta:
-        {question}
-        
-        Resposta curta e objetiva em Português:
-        """
-        self.prompt = PromptTemplate.from_template(self.template)
+    def __init__(self):
+        # Reutiliza o modelo e o prompt já criados (singletons)
+        self.model = _modelo_llm
+        self.prompt = _prompt
 
     def generate_answer(self, question, context_docs):
-        context_text = "\n\n".join([doc.page_content for doc in context_docs])
-        chain = self.prompt | self.model
-        response = chain.invoke({
-            "context": context_text,
+        """Gera uma resposta usando o LLM com base nos trechos encontrados."""
+        # Junta todos os trechos em um único texto de contexto
+        texto_contexto = "\n\n".join([doc.page_content for doc in context_docs])
+
+        # Monta a cadeia: prompt → modelo
+        cadeia = self.prompt | self.model
+
+        # Invoca o modelo com o contexto e a pergunta
+        resposta = cadeia.invoke({
+            "context": texto_contexto,
             "question": question
         })
-        return response
+        return resposta
