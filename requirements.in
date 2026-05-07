@@ -1,0 +1,21 @@
+# Servidor e API
+fastapi
+uvicorn[standard]  # Instala uvloop e httptools automaticamente
+python-multipart
+aiofiles
+python-dotenv
+pydantic
+pydantic-settings
+
+# Inteligência Artificial e Processamento
+langchain-core
+langchain-community
+langchain-ollama
+langchain-huggingface
+langchain-chroma
+langchain-text-splitters
+sentence-transformers
+ollama
+
+# Manipulação de Documentos
+pymupdf

@@ -1,22 +1,22 @@
+import os
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 
 # ============================================================
 # SINGLETON: a conexão com o Ollama é criada UMA ÚNICA VEZ.
 # Evita reconectar ao modelo LLM a cada pergunta do usuário.
-#
-# ATENÇÃO sobre memória RAM:
-#   - llama3     → precisa de ~4.6 GB (NÃO cabe em PCs com pouca RAM)
-#   - tinyllama  → precisa de ~637 MB (leve, ideal para PCs modestos)
-#   - llama3.2:1b → precisa de ~1.3 GB (boa qualidade, ainda leve)
-#
-# Troque o modelo abaixo conforme a RAM disponível no seu PC.
 # ============================================================
-_modelo_llm = OllamaLLM(model="tinyllama")
+
+# Pega a URL do Ollama da variável de ambiente 
+# (padrão é localhost para rodar fora do Docker)
+url_ollama = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+_modelo_llm = OllamaLLM(
+    model="llama3.2:1b",
+    base_url=url_ollama
+)
 
 # Template do prompt — também criado uma vez só
-# NOTA: as instruções de idioma são repetidas de propósito.
-# Modelos pequenos (tinyllama) precisam de reforço para obedecer.
 _template_prompt = """
 ### Instrução:
 Você é um assistente acadêmico. Responda a PERGUNTA usando apenas o CONTEXTO fornecido.

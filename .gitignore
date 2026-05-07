@@ -8,3 +8,15 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Dados do projeto (Banco vetorial e Uploads)
+data/
+
+# Variáveis de ambiente
+.env
+
+# Logs e arquivos temporários do sistema
+.DS_Store
+.idea/
+.vscode/
+*.log
