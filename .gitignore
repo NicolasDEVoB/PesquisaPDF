@@ -1,22 +1,42 @@
-# Python-generated files
+# --- ARQUIVOS DO PYTHON ---
+# Pastas de cache que o Python cria sozinho
 __pycache__/
 *.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+*$py.class
 
-# Virtual environments
-.venv
+# --- AMBIENTES VIRTUAIS ---
+# Onde ficam instaladas as bibliotecas do projeto (muito pesado para subir)
+.venv/
+venv/
+env/
 
-# Dados do projeto (Banco vetorial e Uploads)
+# --- DADOS E UPLOADS ---
+# Banco de dados e arquivos enviados (não queremos subir arquivos pessoais/testes)
 data/
+docintel/data/
+*.db
+*.sqlite3
 
-# Variáveis de ambiente
+# --- SEGURANÇA ---
+# Arquivos com senhas e chaves de API (NUNCA SUBIR)
 .env
+.env.local
+.env.*
 
-# Logs e arquivos temporários do sistema
-.DS_Store
-.idea/
+# --- FERRAMENTAS E IDEs ---
+# Configurações do VS Code ou PyCharm
 .vscode/
+.idea/
+*.swp
+
+# --- SISTEMA OPERACIONAL ---
+# Arquivos inúteis que o Windows e Mac criam
+.DS_Store
+Thumbs.db
+
+# --- TESTES E LOGS ---
+# Cache de testes e arquivos de registro de erros
+.pytest_cache/
 *.log
+.coverage
+htmlcov/
