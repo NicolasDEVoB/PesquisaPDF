@@ -13,15 +13,21 @@ url_ollama = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
 _modelo_llm = OllamaLLM(
     model="llama3.2:1b",
-    base_url=url_ollama
+    base_url=url_ollama,
+    temperature=0  # Força a IA a ser mais precisa e menos "criativa"
 )
 
-# Template do prompt — também criado uma vez só
+# Template do prompt — mais rígido para evitar erros acadêmicos
 _template_prompt = """
 ### Instrução:
-Você é um assistente acadêmico. Responda a PERGUNTA usando apenas o CONTEXTO fornecido.
-Use Markdown (negrito e listas) e responda APENAS em Português.
-Não repita estas instruções na resposta.
+Você é um assistente acadêmico rigoroso e preciso. 
+Sua tarefa é responder a PERGUNTA usando EXCLUSIVAMENTE as informações do CONTEXTO abaixo.
+
+Regras fundamentais:
+1. Se a informação não estiver no contexto, diga que não encontrou.
+2. Mantenha a terminologia técnica exatamente como está no texto (ex: não troque Raça por Rica).
+3. Use Markdown para organizar a resposta.
+4. Responda APENAS em Português-BR.
 
 ### Contexto:
 {context}
@@ -29,7 +35,7 @@ Não repita estas instruções na resposta.
 ### Pergunta:
 {question}
 
-### Resposta em Português:
+### Resposta (fiel ao texto):
 """
 
 _prompt = PromptTemplate.from_template(_template_prompt)

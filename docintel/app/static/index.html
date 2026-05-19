@@ -3,63 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocIntel - Pesquisa Inteligente</title>
-    <!-- Google Fonts: Inter para um visual moderno e limpo -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>DocIntel - Chat Inteligente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
-    <!-- Biblioteca Marked para converter Markdown em HTML -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Barra Lateral para Uploads e Informações -->
-        <aside class="sidebar">
-            <div class="logo">
-                <h1>DocIntel</h1>
-                <p>IA para seus documentos</p>
-            </div>
-            
-            <div class="upload-section">
-                <h3>Carregar Documento</h3>
-                <label for="arquivo-pdf" class="botao-upload">
-                    <span>Selecionar PDF</span>
-                    <input type="file" id="arquivo-pdf" accept=".pdf" hidden>
-                </label>
-                <div id="status-upload" class="status-texto"></div>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>DocIntel</span>
+                </div>
+                <button class="sidebar-close" id="sidebarClose">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
 
-            <div class="info-section">
-                <p>Arraste e solte seus PDFs ou clique acima para começar a conversar com seus documentos.</p>
+            <button class="btn-novo-chat" id="novoChat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Novo chat
+            </button>
+
+            <div class="sidebar-section">
+                <h3>Documentos</h3>
+                <label for="arquivo-pdf" class="btn-upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                    </svg>
+                    Upload PDF
+                    <input type="file" id="arquivo-pdf" accept=".pdf" hidden>
+                </label>
+                <div id="status-upload" class="status-upload"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Gerenciamento</h3>
+                <a href="/database" class="btn-novo-chat" style="text-decoration: none; margin: 0 0 8px 0;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 7v10c0 1.1.9 2 2 2h12a2 2 0 002-2V7M4 7a2 2 0 012-2h12a2 2 0 012 2M4 7l8 5 8-5"/>
+                    </svg>
+                    Ver Banco de Dados
+                </a>
+                <button id="botao-limpar" class="btn-limpar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                    </svg>
+                    Limpar dados
+                </button>
+            </div>
+
+            <div class="sidebar-footer">
+                <p>DocIntel v1.0 — IA acadêmica</p>
             </div>
         </aside>
 
-        <!-- Área Principal do Chat -->
-        <main class="chat-area">
-            <div id="historico-chat" class="historico-chat">
-                <!-- Mensagem de Boas-vindas -->
-                <div class="mensagem bot">
-                    <div class="avatar">🤖</div>
-                    <div class="conteudo">
-                        <p>Olá! Eu sou o assistente do DocIntel. Faça o upload de um PDF e pergunte qualquer coisa sobre ele.</p>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <main class="main">
+            <header class="topbar">
+                <button class="btn-menu" id="btnMenu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18"/>
+                    </svg>
+                </button>
+                <div class="topbar-titulo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>DocIntel</span>
+                </div>
+            </header>
+
+            <div id="historico-chat" class="chat">
+                <div class="chat-welcome">
+                    <div class="welcome-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <h2>O que você quer saber?</h2>
+                    <p>Faça upload de um PDF e pergunte qualquer coisa sobre o conteúdo.</p>
+                    <div class="welcome-dicas">
+                        <div class="dica" onclick="document.getElementById('campo-pergunta').value = 'Qual é o assunto principal do documento?';">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            Qual é o assunto principal?
+                        </div>
+                        <div class="dica" onclick="document.getElementById('campo-pergunta').value = 'Faça um resumo do documento';">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            Faça um resumo
+                        </div>
+                        <div class="dica" onclick="document.getElementById('campo-pergunta').value = 'Quais os principais tópicos abordados?';">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                            Quais os principais tópicos?
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Área de Entrada de Mensagem -->
-            <div class="input-container">
-                <form id="formulario-pergunta" class="pergunta-form">
-                    <input type="text" id="campo-pergunta" placeholder="Digite sua pergunta aqui..." autocomplete="off">
-                    <button type="submit" id="botao-enviar">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <div class="input-area">
+                <form id="formulario-pergunta" class="input-form">
+                    <input
+                        type="text"
+                        id="campo-pergunta"
+                        placeholder="Digite sua pergunta..."
+                        autocomplete="off"
+                        autofocus
+                    >
+                    <button type="submit" id="botao-enviar" class="btn-enviar" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/>
                         </svg>
                     </button>
                 </form>
+                <p class="input-legal">O DocIntel pode cometer erros. Verifique informações importantes.</p>
             </div>
         </main>
     </div>
 
-    <!-- Script principal (JS compilado do TS) -->
     <script src="/static/script.js"></script>
 </body>
 </html>

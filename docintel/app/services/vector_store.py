@@ -36,3 +36,27 @@ class VectorStoreManager:
         )
         resultados = vector_db.similarity_search(query, k=k)
         return resultados
+
+    def listar_documentos(self):
+        """Lista os títulos únicos de documentos PDF no banco."""
+        try:
+            vector_db = Chroma(
+                persist_directory=self.diretorio_banco,
+                embedding_function=self.embeddings
+            )
+            # O .get() sem argumentos retorna os metadados de todos os documentos
+            dados = vector_db.get()
+            metadados = dados.get('metadatas', [])
+            
+            # Usamos um set para garantir que títulos duplicados apareçam uma só vez
+            titulos_unicos = set()
+            for meta in metadados:
+                caminho_fonte = meta.get('source')
+                if caminho_fonte:
+                    nome_arquivo = os.path.basename(caminho_fonte)
+                    titulos_unicos.add(nome_arquivo)
+            
+            return sorted(list(titulos_unicos))
+        except Exception as erro:
+            print(f"Erro ao listar documentos: {erro}")
+            return []

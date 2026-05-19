@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocIntel - Banco de Dados</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>DocIntel</span>
+                </div>
+            </div>
+
+            <a href="/pesquisa" class="btn-novo-chat" style="text-decoration: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Voltar ao Chat
+            </a>
+
+            <div class="sidebar-footer">
+                <p>DocIntel v1.0 — IA acadêmica</p>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-titulo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>Banco de Dados</span>
+                </div>
+            </header>
+
+            <div class="db-container">
+                <div class="db-header">
+                    <h1>Documentos Carregados</h1>
+                    <p>Estes são os arquivos PDF que já foram processados e estão disponíveis para consulta.</p>
+                </div>
+
+                <div id="lista-documentos" class="document-grid">
+                    <!-- A lista será preenchida pelo JavaScript -->
+                    <div class="loading">Carregando documentos...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Script simples para carregar os documentos da API
+        async function carregarDocumentos() {
+            const container = document.getElementById('lista-documentos');
+            try {
+                const resposta = await fetch('/api/database');
+                const dados = await resposta.json();
+                
+                if (dados.documentos && dados.documentos.length > 0) {
+                    container.innerHTML = '';
+                    dados.documentos.forEach(doc => {
+                        const card = document.createElement('div');
+                        card.className = 'document-card';
+                        card.innerHTML = `
+                            <div class="doc-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </div>
+                            <div class="doc-info">
+                                <span class="doc-name">${doc}</span>
+                                <span class="doc-status">Indexado</span>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                } else {
+                    container.innerHTML = '<div class="empty-state">Nenhum documento encontrado no banco.</div>';
+                }
+            } catch (erro) {
+                console.error('Erro ao buscar documentos:', erro);
+                container.innerHTML = '<div class="error-state">Erro ao carregar documentos.</div>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', carregarDocumentos);
+    </script>
+</body>
+</html>

@@ -121,9 +121,39 @@ async function lidarComUpload() {
     }
 }
 
+const botaoLimpar = document.getElementById('botao-limpar') as HTMLButtonElement;
+
+/**
+ * Função para limpar todos os dados do servidor e do chat
+ */
+async function limparDados() {
+    if (!confirm("Tem certeza que deseja apagar todos os documentos e o histórico?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/limpar', { method: 'POST' });
+        const resultado = await response.json();
+
+        if (response.ok) {
+            // Limpa o chat na tela
+            historicoChat.innerHTML = '';
+            adicionarMensagem("Tudo foi limpo com sucesso! Pode enviar novos arquivos.", 'bot');
+            statusUpload.innerText = '';
+            alert("Sistema resetado com sucesso.");
+        } else {
+            alert("Erro ao limpar dados: " + resultado.detail);
+        }
+    } catch (erro) {
+        console.error("Erro ao limpar:", erro);
+        alert("Erro de conexão ao tentar limpar.");
+    }
+}
+
 // Eventos
 formularioPergunta.addEventListener('submit', enviarPergunta);
 seletorArquivo.addEventListener('change', lidarComUpload);
+botaoLimpar.addEventListener('click', limparDados);
 
 // Esta linha abaixo avisa ao TypeScript que este arquivo é um módulo,
 // o que resolve o erro de "variáveis duplicadas" caso o arquivo .js esteja na mesma pasta.

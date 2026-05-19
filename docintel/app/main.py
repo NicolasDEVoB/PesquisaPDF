@@ -51,6 +51,21 @@ async def interface_pesquisa():
         return {"erro": "Arquivo index.html não encontrado na pasta static."}
     return FileResponse(str(caminho_index))
 
+@app.get("/database")
+async def interface_database():
+    # Retorna o arquivo HTML da página do banco de dados
+    caminho_db_html = STATIC_DIR / "database.html"
+    if not caminho_db_html.exists():
+        return {"erro": "Arquivo database.html não encontrado na pasta static."}
+    return FileResponse(str(caminho_db_html))
+
+@app.get("/api/database")
+async def api_listar_documentos():
+    # Retorna a lista de documentos em JSON
+    v_manager = VectorStoreManager()
+    documentos = v_manager.listar_documentos()
+    return {"documentos": documentos}
+
 @app.post("/upload")
 async def upload_document(
     request: Request,
@@ -139,6 +154,25 @@ def process_and_index(caminho_pdf: str):
         os.remove(caminho_pdf)
     except OSError:
         pass
+
+@app.post("/limpar")
+async def limpar_tudo():
+    """Apaga todos os documentos enviados e limpa o banco de dados vetorial."""
+    try:
+        # 1. Limpa a pasta de uploads (caso tenha sobrado algo)
+        if UPLOAD_DIR.exists():
+            shutil.rmtree(UPLOAD_DIR)
+            UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+        # 2. Limpa o banco de dados (pasta data/db)
+        pasta_db = Path("data/db")
+        if pasta_db.exists():
+            shutil.rmtree(pasta_db)
+            pasta_db.mkdir(parents=True, exist_ok=True)
+            
+        return {"message": "Tudo limpo! Você pode começar do zero agora."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao limpar arquivos: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
