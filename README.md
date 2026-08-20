@@ -85,4 +85,4 @@ docker exec -it ollama_service ollama pull llama3.2:1b
 
 ## 📜 Filosofia de Desenvolvimento
 
-Este projeto segue o princípio de código simples e legível. Usei IAs para gerar o código, mas revisei e ajustei cada linha, visando a velocidade de desenvolvimento e a qualidade do código. As IAs foram usadas como ferramenta, não como substitutas do desenvolvedor, então estou usando da forma que acredito ser a mais eficiente e produtiva e estou aberto a novas ideias de como melhorar.
+Este projeto segue o princípio de código simples e legível. Usei IAs para gerar o código, mas revisei e ajustei cada linha, visando a velocidade de desenvolvimento e a qualidade do código. As IA foram usadas como copiloto e assistentes de desenvolvimento. Estou usando IA da forma que acredito ser a mais eficiente e produtiva e estou aberto a novas ideias de como melhorar.
